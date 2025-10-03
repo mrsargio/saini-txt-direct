@@ -471,16 +471,19 @@ async def drm_handler(bot: Client, m: Message):
                 elif any(ext in url for ext in [".jpg", ".jpeg", ".png"]):
                     try:
                         ext = url.split('.')[-1]
-                        cmd = f'yt-dlp -o "{namef}.{ext}" "{url}"'
-                        download_cmd = f"{cmd} -R 25 --fragment-retries 25"
-                        os.system(download_cmd)
+                        import requests
+                        response = requests.get(url, stream=True)
+                        if response.status_code == 200:
+                        with open(f"{safe_name}.pdf", "wb") as f:
+                        f.write(response.content)
+                  else:
+                        await m.reply_text(f"❌ Failed to download PDF: {response.status_code}")
                         copy = await bot.send_photo(chat_id=channel_id, photo=f'{namef}.{ext}', caption=ccimg)
                         count += 1
                         os.remove(f'{namef}.{ext}')
-                    except FloodWait as e:
-                        await m.reply_text(str(e))
-                        time.sleep(e.x)
-                        continue    
+                    except Exception as e:
+                        await m.reply_text(f"❌ PDF Download Error: {str(e)}")
+                        continue
 
                 elif any(ext in url for ext in [".mp3", ".wav", ".m4a"]):
                     try:
