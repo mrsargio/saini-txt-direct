@@ -550,6 +550,11 @@ async def drm_handler(bot: Client, m: Message):
             await bot.send_message(m.chat.id, f"<blockquote><b>✅ Your Task is completed, please check your Set Channel📱</b></blockquote>")
 
 #============================================================================================================
+def sanitize_filename(name):
+    import re
+    # स्पेशल कैरेक्टर, हिंदी, स्पेस सबको `_` में बदल देगा
+    return re.sub(r'[^A-Za-z0-9_\-\.]', '_', name)
+
 def register_drm_handlers(bot):
     @bot.on_message(filters.private & (filters.document | filters.text))
     async def call_drm_handler(bot: Client, m: Message):
