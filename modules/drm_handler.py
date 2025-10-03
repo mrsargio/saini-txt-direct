@@ -456,13 +456,12 @@ async def drm_handler(bot: Client, m: Message):
                             
                     else:
                         try:
-                            safe_name = sanitize_filename(namef)
-                            cmd = f'yt-dlp -o "{safe_name}.pdf" "{url}"'
+                            cmd = f'yt-dlp -o "{namef}.pdf" "{url}"'
                             download_cmd = f"{cmd} -R 25 --fragment-retries 25"
                             os.system(download_cmd)
-                            copy = await bot.send_document(chat_id=channel_id, document=f'{safe_name}.pdf', caption=cc1)
+                            copy = await bot.send_document(chat_id=channel_id, document=f'{namef}.pdf', caption=cc1)
                             count += 1
-                            os.remove(f'{safe_name}.pdf')
+                            os.remove(f'{namef}.pdf')
                         except FloodWait as e:
                             await m.reply_text(str(e))
                             time.sleep(e.x)
@@ -471,19 +470,16 @@ async def drm_handler(bot: Client, m: Message):
                 elif any(ext in url for ext in [".jpg", ".jpeg", ".png"]):
                     try:
                         ext = url.split('.')[-1]
-                        import requests
-                        response = requests.get(url, stream=True)
-                        if response.status_code == 200:
-                        with open(f"{safe_name}.pdf", "wb") as f:
-                        f.write(response.content)
-                  else:
-                        await m.reply_text(f"❌ Failed to download PDF: {response.status_code}")
+                        cmd = f'yt-dlp -o "{namef}.{ext}" "{url}"'
+                        download_cmd = f"{cmd} -R 25 --fragment-retries 25"
+                        os.system(download_cmd)
                         copy = await bot.send_photo(chat_id=channel_id, photo=f'{namef}.{ext}', caption=ccimg)
                         count += 1
                         os.remove(f'{namef}.{ext}')
-                    except Exception as e:
-                        await m.reply_text(f"❌ PDF Download Error: {str(e)}")
-                        continue
+                    except FloodWait as e:
+                        await m.reply_text(str(e))
+                        time.sleep(e.x)
+                        continue    
 
                 elif any(ext in url for ext in [".mp3", ".wav", ".m4a"]):
                     try:
@@ -553,11 +549,6 @@ async def drm_handler(bot: Client, m: Message):
             await bot.send_message(m.chat.id, f"<blockquote><b>✅ Your Task is completed, please check your Set Channel📱</b></blockquote>")
 
 #============================================================================================================
-def sanitize_filename(name):
-    import re
-    # स्पेशल कैरेक्टर, हिंदी, स्पेस सबको `_` में बदल देगा
-    return re.sub(r'[^A-Za-z0-9_\-\.]', '_', name)
-
 def register_drm_handlers(bot):
     @bot.on_message(filters.private & (filters.document | filters.text))
     async def call_drm_handler(bot: Client, m: Message):
